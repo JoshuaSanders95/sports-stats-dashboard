@@ -1,0 +1,41 @@
+{
+  "name": "sports-stats-dashboard",
+  "version": "1.0.0",
+  "description": "A dynamic sports statistics dashboard built with JavaScript featuring real-time data, interactive charts, and responsive design",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "serve": "npx http-server -p 8000 -o",
+    "dev": "npx live-server --port=8000 --open=index.html"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JoshuaSanders95/sports-stats-dashboard.git"
+  },
+  "keywords": [
+    "sports",
+    "statistics",
+    "dashboard",
+    "javascript",
+    "data-visualization",
+    "charts",
+    "api",
+    "web-development",
+    "es6",
+    "async-await",
+    "dom-manipulation",
+    "responsive-design"
+  ],
+  "author": {
+    "name": "Joshua Sanders",
+    "email": "joshuasanders4477@gmail.com",
+    "url": "https://linktr.ee/jsanders44"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/JoshuaSanders95/sports-stats-dashboard/issues"
+  },
+  "homepage": "https://github.com/JoshuaSanders95/sports-stats-dashboard#readme",
+  "devDependencies": {},
+  "dependencies": {}
+}
