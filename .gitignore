@@ -9,6 +9,9 @@ yarn-error.log*
 .env.local
 .env.*.local
 
+# API Configuration (contains credentials)
+js/config.js
+
 # OS files
 .DS_Store
 Thumbs.db

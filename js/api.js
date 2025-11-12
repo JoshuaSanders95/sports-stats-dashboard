@@ -1,9 +1,10 @@
 /**
- * API module for fetching sports data
- * Demonstrates async/await, Promises, and error handling
+ * API module for fetching sports data from MySportsFeeds
+ * Demonstrates async/await, Promises, error handling, and real API integration
  */
 
 import { getRandomInt, getRandomElement } from './utils.js';
+import { API_CONFIG } from './config.js';
 
 // Mock team names for different sports
 const NBA_TEAMS = [
@@ -26,11 +27,57 @@ const EPL_TEAMS = [
     'Newcastle', 'Brighton', 'Aston Villa', 'West Ham', 'Leicester', 'Everton'
 ];
 
-// API Configuration
-const API_CONFIG = {
-    baseURL: 'https://api.sports-data.example.com', // Mock API endpoint
-    timeout: 5000,
-    retries: 3
+// MySportsFeeds API Helper Functions
+
+/**
+ * Create authentication headers for MySportsFeeds
+ * @returns {Headers} Headers object with authentication
+ */
+const createAuthHeaders = () => {
+    const headers = new Headers();
+    // MySportsFeeds uses Basic Auth with API key as username and 'MYSPORTSFEEDS' as password
+    const credentials = btoa(`${API_CONFIG.MYSPORTSFEEDS.API_KEY}:MYSPORTSFEEDS`);
+    headers.append('Authorization', `Basic ${credentials}`);
+    headers.append('Accept', 'application/json');
+    return headers;
+};
+
+/**
+ * Make authenticated request to MySportsFeeds API
+ * @param {string} endpoint - API endpoint path
+ * @param {string} league - League identifier (nba, nfl, etc.)
+ * @returns {Promise<Object>} API response data
+ */
+const fetchFromMySportsFeeds = async (endpoint, league = 'nba') => {
+    const url = `${API_CONFIG.MYSPORTSFEEDS.BASE_URL}/${league}/${API_CONFIG.MYSPORTSFEEDS.SEASON}/${endpoint}.json`;
+    
+    try {
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: createAuthHeaders(),
+            timeout: API_CONFIG.SETTINGS.timeout
+        });
+        
+        if (!response.ok) {
+            throw new Error(`API Error: ${response.status} ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('MySportsFeeds API Error:', error);
+        throw error;
+    }
+};
+
+/**
+ * Check if we should use real API or fallback to mock data
+ * @returns {boolean} True if API key is configured
+ */
+const isAPIConfigured = () => {
+    return API_CONFIG.MYSPORTSFEEDS.API_KEY && 
+           API_CONFIG.MYSPORTSFEEDS.API_KEY !== 'YOUR_API_KEY_HERE' &&
+           API_CONFIG.MYSPORTSFEEDS.API_KEY !== 'YOUR_MYSPORTSFEEDS_API_KEY_HERE';
 };
 
 /**
@@ -128,12 +175,42 @@ const generateMockGames = (teams, count = 6) => {
  */
 export const fetchStandings = async (league = 'nba') => {
     try {
-        await simulateNetworkDelay();
-        
-        // Simulate occasional API errors
-        if (Math.random() < 0.05) {
-            throw new Error('Network error: Unable to fetch standings');
+        // Try to use real API if configured
+        if (isAPIConfigured()) {
+            try {
+                const data = await fetchFromMySportsFeeds('standings', league);
+                
+                // Transform MySportsFeeds data to our format
+                const standings = data.standings.map((standing, index) => {
+                    const team = standing.team;
+                    const stats = standing.stats;
+                    
+                    return {
+                        id: team.id,
+                        name: team.abbreviation || team.city,
+                        wins: stats.wins || 0,
+                        losses: stats.losses || 0,
+                        winPct: parseFloat((stats.wins / (stats.wins + stats.losses)).toFixed(3)) || 0,
+                        streak: stats.streak || 'N/A',
+                        points: stats.pointsFor || getRandomInt(80, 120),
+                        gamesPlayed: stats.gamesPlayed || (stats.wins + stats.losses)
+                    };
+                });
+                
+                return {
+                    success: true,
+                    data: standings,
+                    league: league.toUpperCase(),
+                    source: 'MySportsFeeds',
+                    timestamp: new Date().toISOString()
+                };
+            } catch (apiError) {
+                console.warn('Real API failed, falling back to mock data:', apiError.message);
+            }
         }
+        
+        // Fallback to mock data
+        await simulateNetworkDelay();
         
         // Select teams based on league
         let teams;
@@ -160,6 +237,7 @@ export const fetchStandings = async (league = 'nba') => {
             success: true,
             data: standings,
             league: league.toUpperCase(),
+            source: 'Mock Data',
             timestamp: new Date().toISOString()
         };
         
@@ -176,12 +254,43 @@ export const fetchStandings = async (league = 'nba') => {
  */
 export const fetchRecentGames = async (league = 'nba') => {
     try {
-        await simulateNetworkDelay();
-        
-        // Simulate occasional API errors
-        if (Math.random() < 0.05) {
-            throw new Error('Network error: Unable to fetch games');
+        // Try to use real API if configured
+        if (isAPIConfigured()) {
+            try {
+                const data = await fetchFromMySportsFeeds('games', league);
+                
+                // Transform MySportsFeeds data to our format
+                const games = data.games.slice(0, 6).map((game, index) => {
+                    const schedule = game.schedule;
+                    const score = game.score;
+                    
+                    return {
+                        id: schedule.id,
+                        homeTeam: schedule.homeTeam.abbreviation || schedule.homeTeam.city,
+                        awayTeam: schedule.awayTeam.abbreviation || schedule.awayTeam.city,
+                        homeScore: score?.homeScoreTotal || 0,
+                        awayScore: score?.awayScoreTotal || 0,
+                        date: schedule.startTime,
+                        status: schedule.playedStatus === 'COMPLETED' ? 'final' : 'scheduled',
+                        winner: score?.homeScoreTotal > score?.awayScoreTotal ? 
+                                schedule.homeTeam.abbreviation : schedule.awayTeam.abbreviation
+                    };
+                });
+                
+                return {
+                    success: true,
+                    data: games,
+                    league: league.toUpperCase(),
+                    source: 'MySportsFeeds',
+                    timestamp: new Date().toISOString()
+                };
+            } catch (apiError) {
+                console.warn('Real API failed for games, falling back to mock data:', apiError.message);
+            }
         }
+        
+        // Fallback to mock data
+        await simulateNetworkDelay();
         
         let teams;
         switch(league.toLowerCase()) {
@@ -207,6 +316,7 @@ export const fetchRecentGames = async (league = 'nba') => {
             success: true,
             data: games,
             league: league.toUpperCase(),
+            source: 'Mock Data',
             timestamp: new Date().toISOString()
         };
         

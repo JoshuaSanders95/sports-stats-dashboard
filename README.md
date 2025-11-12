@@ -4,12 +4,15 @@ A dynamic sports statistics dashboard built with JavaScript that fetches and dis
 
 ## 🎯 Features
 
-- **Live Sports Data**: Fetches real-time sports statistics from public APIs
+- **Live Sports Data**: Fetches real-time sports statistics from MySportsFeeds API
+- **Real API Integration**: Uses MySportsFeeds for NBA, NFL, MLB, and NHL data
+- **Fallback System**: Gracefully falls back to mock data if API is unavailable
 - **Interactive Visualizations**: Dynamic charts and graphs using Chart.js
 - **Responsive Design**: Mobile-first design that works on all devices
 - **Search & Filter**: Find specific teams, players, or games
 - **Clean Code**: Modular JavaScript with clear separation of concerns
 - **Error Handling**: Robust error handling and loading states
+- **Secure API Management**: API keys stored securely and not committed to repository
 
 ## 🛠️ Technologies Used
 
@@ -33,7 +36,16 @@ git clone https://github.com/JoshuaSanders95/sports-stats-dashboard.git
 cd sports-stats-dashboard
 ```
 
-2. Open `index.html` in your browser or use a local server:
+2. **Configure API (Optional for Real Data)**:
+   - Copy `js/config.example.js` to `js/config.js`
+   - Sign up for a free API key at [MySportsFeeds.com](https://www.mysportsfeeds.com/)
+   - Add your API key to `js/config.js`:
+   ```javascript
+   API_KEY: 'your_api_key_here'
+   ```
+   - **Note**: The app works with mock data if no API key is configured
+
+3. Open `index.html` in your browser or use a local server:
 ```bash
 # Using Python
 python -m http.server 8000
@@ -42,7 +54,7 @@ python -m http.server 8000
 npx http-server
 ```
 
-3. Navigate to `http://localhost:8000` in your browser
+4. Navigate to `http://localhost:8000` in your browser
 
 ## 📁 Project Structure
 
