@@ -4,7 +4,9 @@
  */
 
 import { getRandomInt, getRandomElement } from './utils.js';
-import { API_CONFIG } from './config.js';
+// Use public config (works on GitHub Pages with mock data)
+// For local development with real API, copy config-public.js to config.js and add your API key
+import { API_CONFIG } from './config-public.js';
 
 // Mock team names for different sports
 const NBA_TEAMS = [
